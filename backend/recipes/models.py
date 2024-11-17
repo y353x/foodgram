@@ -1,16 +1,15 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+from django.db import models
 from django.utils.text import Truncator
 
-from api.constants import (NAME_LENGTH, TAG_LENGTH,
-                           SHORT_NAME_LENGTH, UNIT_NAME_LENGTH,
-                           MAX_ADMIN_NAME_LENGTH)
+from api.constants import (MAX_ADMIN_NAME_LENGTH, NAME_LENGTH,
+                           SHORT_NAME_LENGTH, TAG_LENGTH, UNIT_NAME_LENGTH)
 
 User = get_user_model()
 
 
-class Ingridient(models.Model):
+class Ingredient(models.Model):
     """
     Модель ингридиентов.
     Название (name) и ед.измерения (slug).
@@ -18,13 +17,15 @@ class Ingridient(models.Model):
     name = models.CharField(verbose_name='Название',
                             unique=True,
                             max_length=SHORT_NAME_LENGTH,
-                            help_text='уникальное название')
+                            help_text='уникальное название',
+                            db_index=True,)
     measurement_unit = models.CharField(verbose_name='Единица измерения',
                                         max_length=UNIT_NAME_LENGTH,
                                         help_text='единица измерения')
 
     class Meta:
-        default_related_name = 'ingridient'
+        ordering = ('id',)
+        default_related_name = 'ingredient'
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
 
@@ -47,6 +48,7 @@ class Tag(models.Model):
                             help_text='уникальный тэг')
 
     class Meta:
+        ordering = ('id',)
         default_related_name = 'tag'
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
@@ -62,12 +64,12 @@ class Recipe(models.Model):
     name = models.CharField(verbose_name='Название',
                             max_length=NAME_LENGTH)
     image = models.ImageField(verbose_name='Фото блюда',
-                              upload_to='media',
+                              upload_to='recipes/',
                               help_text='Загрузите фото блюда/рецепта')
     text = models.TextField(verbose_name='Описание')
-    ingridients = models.ManyToManyField(Ingridient,
+    ingredients = models.ManyToManyField(Ingredient,
                                          verbose_name='Ингридиенты',
-                                         through='........')
+                                         through='IngredientRecipe')
     tags = models.ManyToManyField(Tag,
                                   verbose_name='Тэги')
     cooking_time = models.PositiveSmallIntegerField(
@@ -76,8 +78,10 @@ class Recipe(models.Model):
         default=1,
         validators=[MinValueValidator(
             1, 'Время приготовления не менее 1 минуты.')])
-    is_favorited = models.BooleanField(verbose_name='В избранном')
-    is_in_shopping_cart = models.BooleanField(verbose_name='В корзине')
+    is_favorited = models.BooleanField(verbose_name='В избранном',
+                                       default=False)
+    is_in_shopping_cart = models.BooleanField(verbose_name='В корзине',
+                                              default=False)
     pub_date = models.DateTimeField(verbose_name='Дата и время публикации',
                                     auto_now_add=True)
 
@@ -96,10 +100,12 @@ class Recipe(models.Model):
         return Truncator(self.name).chars(MAX_ADMIN_NAME_LENGTH)
 
 
-class IngridientRecipe(models.Model):
+class IngredientRecipe(models.Model):
     """Промежуточная таблица с весом ингридиента в рецепте."""
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingridient = models.ForeignKey(Ingridient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE,
+                               related_name='ingredient_recipe',)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингридиента',
         help_text='Введите количество ингридиента в его ед.измерения',
@@ -108,6 +114,7 @@ class IngridientRecipe(models.Model):
             1, 'Количество ингридиента не менее 1 ед.измерения.')])
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'Cостав'
         verbose_name_plural = 'Состав'
         constraints = [
@@ -145,8 +152,3 @@ class Favorite(CartFavorite):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         default_related_name = 'favorite'
-
-
-class Follow(models.Model):
-    """Модель подписки на авторов."""
-    pass
