@@ -68,37 +68,54 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Сериалайзер для рецептов."""
     ingredients = IngredientWriteSerializer(
         many=True,
-        write_only=True
-    )
+        write_only=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
-        many=True
-    )
+        many=True)
     image = Base64ImageField()
-    author = UserSerializer(read_only=True)
-    is_favorited = serializers.BooleanField(default=False)
-    is_in_shopping_cart = serializers.BooleanField(default=False)
+    author = UserSerializer(
+        read_only=True)
+    is_favorited = serializers.BooleanField(
+        default=False,
+        read_only=True)
+    is_in_shopping_cart = serializers.BooleanField(
+        default=False,
+        read_only=True)
 
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        cooking_time = validated_data.get('cooking_time')
-        if not ingredients or not tags or not cooking_time:
-            error_message = 'ингредиенты или тэги не добавлены'
+    def validate(self, attrs):
+        """Валидация тэгов, ингредиентов."""
+        tags = attrs.get('tags')
+        ingredients = attrs.get('ingredients')
+
+        if not tags:
             raise ValidationError(
-                detail=error_message,
+                detail='добавьте теги.',
                 code=status.HTTP_400_BAD_REQUEST)
         elif len(tags) > len(set(tags)):
-            error_message = 'тэги или ингредиенты повторяются'
             raise ValidationError(
-                detail=error_message,
+                detail='тэги повторяются.',
                 code=status.HTTP_400_BAD_REQUEST)
-        recipe = super().create(validated_data)
+        elif not ingredients:
+            raise ValidationError(
+                detail='добавьте ингредиенты.',
+                code=status.HTTP_400_BAD_REQUEST)
+        uniq_ingredients = set(ingredient['id'] for ingredient in ingredients)
+        if len(ingredients) > len(uniq_ingredients):
+            raise ValidationError(
+                detail='повторяющиеся ингредиенты.',
+                code=status.HTTP_400_BAD_REQUEST)
         for ingredient in ingredients:
             if ingredient['amount'] < 1:
                 raise ValidationError(
                     detail='ингредиента < 1',
                     code=status.HTTP_400_BAD_REQUEST)
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = super().create(validated_data)
+        for ingredient in ingredients:
             IngredientRecipe.objects.update_or_create(
                 recipe=recipe,
                 ingredient=ingredient['id'],
@@ -106,17 +123,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
         return recipe
 
-    # def update(self, instance, validated_data):
-    #     tags = validated_data.pop('tags')
-    #     ingredients = validated_data.pop('recipe_ingredients')
-    #     with transaction.atomic():
-    #         instance.ingredients.clear()
-    #         instance.tags.clear()
-    #         self.add_tags_and_ingredients_to_recipe(
-    #             instance, tags, ingredients
-    #         )
-    #         super().update(instance, validated_data)
-    #         return instance
+    def update(self, instance, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        instance.ingredients.clear()
+        instance.tags.clear()
+        for ingredient in ingredients:
+            IngredientRecipe.objects.update_or_create(
+                recipe=instance,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'])
+        instance.tags.set(tags)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         value = super().to_representation(instance)
@@ -132,8 +150,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'name', 'text', 'cooking_time', 'author',
                   'is_favorited', 'is_in_shopping_cart',)
         extra_kwargs = {'ingredients': {'required': True},
-                        'tags': {'required': True},
                         'cooking_time': {'required': True},
+                        'tags': {'required': True},
                         'name': {'required': True},
                         'text': {'required': True},
                         }

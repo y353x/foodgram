@@ -86,8 +86,8 @@ class Recipe(models.Model):
                                     auto_now_add=True)
 
     class Meta:
-        ordering = ['-pub_date']
-        default_related_name = 'recipe'
+        ordering = ('-pub_date',)
+        default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         constraints = (

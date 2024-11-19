@@ -55,9 +55,20 @@ class UserViewSet(djoser_views.UserViewSet):
         else:
             raise ValidationError('Введены некорректные данные.')
 
-# {
-#   "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg=="
-# }
+    @action(
+        methods=['GET'],
+        detail=False,
+        permission_classes=[IsAuthenticated],
+    )
+    def subscriptions(self, request):
+        """Подписки пользователя."""
+        follow_list = Follow.objects.filter(user=self.request.user)
+        follow_pages = self.paginate_queryset(follow_list)
+        serializer = FollowSerializer(
+            follow_pages,
+            many=True,
+            context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
 
 class FollowViewSet(mixins.CreateModelMixin,
@@ -68,7 +79,6 @@ class FollowViewSet(mixins.CreateModelMixin,
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('author__username',)
-    # pagination_class = ApiPagination
 
     def get_queryset(self):
         current_user = self.request.user

@@ -49,9 +49,9 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'password', 'first_name', 'last_name']
 
     class Meta:
-        verbose_name = "пользователь"
-        verbose_name_plural = "пользователи"
-        ordering = ("id",)
+        verbose_name = 'пользователь'
+        verbose_name_plural = 'пользователи'
+        ordering = ('id',)
 
     def __str__(self):
         return Truncator(self.username).chars(MAX_ADMIN_NAME_LENGTH)
@@ -74,6 +74,7 @@ class Follow(models.Model):
         User, on_delete=models.CASCADE, related_name='author')
 
     class Meta:
+        ordering = ('author_id',)
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
 

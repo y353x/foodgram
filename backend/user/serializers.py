@@ -110,10 +110,15 @@ class FollowSerializer(serializers.ModelSerializer):
                 author_id=obj.author_id).exists()
 
     def get_recipes(self, obj):
-        recipes = Recipe.objects.filter(author=obj.author)
+        """Получение рецептов автора (с возможностью ограничения кол-ва)."""
+        request = self.context.get('request')
+        recipes = obj.author.recipes.all()
+        recipes_limit = int(request.query_params.get('recipes_limit', 6))
+        recipes = recipes[:recipes_limit]
         return api_serializers.RecipeFollowSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
+        """Расчет количества рецептов автора."""
         recipes_count = Recipe.objects.filter(author=obj.author).count()
         return recipes_count
 
@@ -122,3 +127,4 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'avatar',
                   'recipes', 'recipes_count',
                   'first_name', 'last_name', 'is_subscribed')
+
