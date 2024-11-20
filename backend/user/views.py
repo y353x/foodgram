@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
 from djoser import views as djoser_views
 from djoser.conf import settings
-from rest_framework import filters, mixins, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from user.models import Follow, User
@@ -12,7 +12,7 @@ from user.serializers import AvatarSerializer, FollowSerializer, UserSerializer
 
 
 class UserViewSet(djoser_views.UserViewSet):
-    """Viewset для пользователя"""
+    """Viewset для пользователя."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -23,14 +23,13 @@ class UserViewSet(djoser_views.UserViewSet):
         return super().get_permissions()
 
     @action(
-        methods=['put', 'post', 'delete'],
+        methods=['POST', 'PUT', 'DELETE'],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_path='me/avatar',
-        url_name='me-avatar',
+        url_path='me/avatar'
     )
     def avatar(self, request):
-        """Добавление/удаление аватара"""
+        """Добавление/удаление аватара."""
         instance = self.get_instance()
         if self.request.data and (request.method == 'POST' or 'PUT'):
             serializer = AvatarSerializer(instance,
@@ -51,7 +50,7 @@ class UserViewSet(djoser_views.UserViewSet):
     @action(
         methods=['GET'],
         detail=False,
-        permission_classes=[IsAuthenticated],
+        permission_classes=[IsAuthenticated]
     )
     def subscriptions(self, request):
         """Подписки пользователя."""
@@ -64,26 +63,18 @@ class UserViewSet(djoser_views.UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(
-        methods=['DELETE', 'POST'],
+        methods=['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated],
+        permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, id):
         author = get_object_or_404(User, id=id)
         user = request.user
         if request.method == 'POST':
-            if Follow.objects.filter(
-                    author=author, user=user).exists():
-                raise ValidationError(
-                    detail='Вы уже подписаны на этого пользователя!',
-                    code=status.HTTP_400_BAD_REQUEST)
-            if user == author:
-                raise ValidationError(
-                    detail='Невозможно подписаться на себя!',
-                    code=status.HTTP_400_BAD_REQUEST)
             serializer = FollowSerializer(
                 data={'author': author},
-                context={'request': request})
+                context={'request': request,
+                         'author': author})
             serializer.is_valid(raise_exception=True)
             serializer.save(user=user, author=author)
             return Response(serializer.data,

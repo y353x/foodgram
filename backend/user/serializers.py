@@ -1,12 +1,12 @@
 import base64  # Модуль с функциями кодирования и декодирования base64
-import re
+import re  # Regex.
 
 from django.core.files.base import ContentFile
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
 import api.serializers as api_serializers
-from api.constants import RECIPES_LIMIT
+from api.constants import RECIPES_LIMIT, USERNAME_LENGTH
 from recipes.models import Recipe
 from user.models import Follow, User
 
@@ -24,7 +24,7 @@ class Base64ImageField(serializers.ImageField):
 
 class UserSerializer(serializers.ModelSerializer):
 
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=USERNAME_LENGTH)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -102,6 +102,20 @@ class FollowSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField()
     avatar = serializers.ImageField(source='author.avatar',
                                     read_only=True)
+
+    def validate(self, attrs):
+        user = self.context.get('request').user
+        author = self.context.get('author')
+        if Follow.objects.filter(
+                author=author, user=user).exists():
+            raise ValidationError(
+                detail='Вы уже подписаны на этого пользователя!',
+                code=status.HTTP_400_BAD_REQUEST)
+        if user == author:
+            raise ValidationError(
+                detail='Невозможно подписаться на себя!',
+                code=status.HTTP_400_BAD_REQUEST)
+        return super().validate(attrs)
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
