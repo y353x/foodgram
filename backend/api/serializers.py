@@ -3,10 +3,11 @@ import base64  # Модуль с функциями кодирования и д
 from django.core.files.base import ContentFile
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
-# from rest_framework.response import Response
 
 from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
 from user.serializers import UserSerializer
+
+# from rest_framework.response import Response
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -153,8 +154,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                         'cooking_time': {'required': True},
                         'tags': {'required': True},
                         'name': {'required': True},
-                        'text': {'required': True},
-                        }
+                        'text': {'required': True}}
 
 
 class RecipeListSerializer(serializers.ModelSerializer):

@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 import api.serializers as api_serializers
+from api.constants import RECIPES_LIMIT
 from recipes.models import Recipe
 from user.models import Follow, User
 
@@ -113,7 +114,8 @@ class FollowSerializer(serializers.ModelSerializer):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""
         request = self.context.get('request')
         recipes = obj.author.recipes.all()
-        recipes_limit = int(request.query_params.get('recipes_limit', 6))
+        recipes_limit = int(request.query_params.get('recipes_limit',
+                                                     RECIPES_LIMIT))
         recipes = recipes[:recipes_limit]
         return api_serializers.RecipeFollowSerializer(recipes, many=True).data
 
@@ -127,4 +129,3 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'avatar',
                   'recipes', 'recipes_count',
                   'first_name', 'last_name', 'is_subscribed')
-

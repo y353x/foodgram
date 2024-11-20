@@ -12,3 +12,5 @@ USERNAME_LENGTH = 150
 MAX_ADMIN_NAME_LENGTH = 25
 # Максимальная длина почты.
 MAIL_LENGTH = 254
+# Количество выводимых рецептов, если не передан параметр.
+RECIPES_LIMIT = 6
