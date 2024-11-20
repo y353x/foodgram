@@ -9,7 +9,6 @@ router.register('users', UserViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('tags', TagViewSet)
 router.register('ingredients', IngredientViewSet)
-# router.register(r"users/(?P<pk>\d+)/subscribe", FollowViewSet, basename='subscribe')
 
 urlpatterns = [
     path('', include(router.urls)),

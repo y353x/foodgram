@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from djoser import views as djoser_views
 from djoser.conf import settings
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -96,7 +96,7 @@ class UserViewSet(djoser_views.UserViewSet):
             if subscription.exists():
                 subscription.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 # class FollowViewSet(mixins.CreateModelMixin,

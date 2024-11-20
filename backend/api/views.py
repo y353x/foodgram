@@ -1,16 +1,12 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, viewsets
-# from rest_framework.response import Response
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 
 from api.filters import RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
-# from api.pagination import ApiPagination
 from api.serializers import (IngredientSerializer, RecipeListSerializer,
                              RecipeSerializer, TagSerializer)
 from recipes.models import Ingredient, Recipe, Tag
-
-# from rest_framework.decorators import action
 
 
 class TagViewSet(mixins.ListModelMixin,

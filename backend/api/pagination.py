@@ -6,5 +6,5 @@ class ApiPagination(PageNumberPagination):
     Переопределение пагинации для использования
     limit из запроса.
     """
-    page_size_query_param = "limit"
+    page_size_query_param = 'limit'
     page_size = 6
