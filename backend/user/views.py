@@ -12,7 +12,8 @@ from user.serializers import AvatarSerializer, FollowSerializer, UserSerializer
 
 
 class UserViewSet(djoser_views.UserViewSet):
-    """Viewset для пользователя."""
+    """Вьюсет для пользователя из модуля Djoser."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -31,19 +32,19 @@ class UserViewSet(djoser_views.UserViewSet):
     def avatar(self, request):
         """Добавление/удаление аватара."""
         instance = self.get_instance()
-        if self.request.data and (request.method == 'POST' or 'PUT'):
-            serializer = AvatarSerializer(instance,
-                                          data=self.request.data,
-                                          partial=True)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response(serializer.data)
+        data = self.request.data
+        if data and (request.method in ('POST', 'PUT')):
+            serializer = AvatarSerializer(instance, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
         elif request.method == 'DELETE':
             data = {'avatar': None}
             serializer = AvatarSerializer(instance, data=data, partial=True)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             raise ValidationError('Введены некорректные данные.')
 
@@ -68,8 +69,10 @@ class UserViewSet(djoser_views.UserViewSet):
         permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, id):
+        """Подписка на/отписка от автора."""
         author = get_object_or_404(User, id=id)
         user = request.user
+
         if request.method == 'POST':
             serializer = FollowSerializer(
                 data={'author': author},
@@ -81,8 +84,6 @@ class UserViewSet(djoser_views.UserViewSet):
                             status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            author = get_object_or_404(User, id=id)
-            user = request.user
             subscription = Follow.objects.filter(user=user, author=author)
             if subscription.exists():
                 subscription.delete()

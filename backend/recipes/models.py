@@ -10,10 +10,10 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """
-    Модель ингридиентов.
+    """Модель ингридиентов.
     Название (name) и ед.измерения (slug).
     """
+
     name = models.CharField(verbose_name='Название',
                             unique=True,
                             max_length=SHORT_NAME_LENGTH,
@@ -34,10 +34,10 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    """
-    Модель тэгов.
+    """Модель тэгов.
     Название (name) и слаг (slug).
     """
+
     name = models.CharField(verbose_name='Название',
                             unique=True,
                             max_length=TAG_LENGTH,
@@ -59,31 +59,37 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     """Модель рецепта."""
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE)
-    name = models.CharField(verbose_name='Название',
-                            max_length=NAME_LENGTH)
-    image = models.ImageField(verbose_name='Фото блюда',
-                              upload_to='recipes/',
-                              help_text='Загрузите фото блюда/рецепта')
-    text = models.TextField(verbose_name='Описание')
-    ingredients = models.ManyToManyField(Ingredient,
-                                         verbose_name='Ингридиенты',
-                                         through='IngredientRecipe')
-    tags = models.ManyToManyField(Tag,
-                                  verbose_name='Тэги')
+
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор рецепта',
+        on_delete=models.CASCADE)
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=NAME_LENGTH)
+    image = models.ImageField(
+        verbose_name='Фото блюда',
+        upload_to='recipes/',
+        help_text='Загрузите фото блюда/рецепта')
+    text = models.TextField(
+        verbose_name='Описание')
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        verbose_name='Ингредиенты',
+        through='IngredientRecipe')
+    tags = models.ManyToManyField(
+        Tag,
+        verbose_name='Тэги')
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         help_text='Введите время пригтовления в минутах',
         default=1,
-        validators=[MinValueValidator(
-            1, 'Время приготовления не менее 1 минуты.')])
-    is_favorited = models.BooleanField(verbose_name='В избранном',
-                                       default=False)
-    is_in_shopping_cart = models.BooleanField(verbose_name='В корзине',
-                                              default=False)
-    pub_date = models.DateTimeField(verbose_name='Дата и время публикации',
-                                    auto_now_add=True)
+        validators=[
+            MinValueValidator(
+                1, 'Время приготовления не менее 1 минуты.')])
+    pub_date = models.DateTimeField(
+        verbose_name='Дата и время публикации',
+        auto_now_add=True)
 
     class Meta:
         ordering = ('-pub_date',)
@@ -128,18 +134,23 @@ class IngredientRecipe(models.Model):
 
 class CartFavorite(models.Model):
     """Абстрактная модель для корзины и избранного."""
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
+                               verbose_name='Рецепт')
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             verbose_name='Пользователь')
 
     class Meta:
+        abstract = True
         constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'author'],
-                name='unique_recipe_author')]
+                fields=['recipe', 'user'],
+                name='unique_recipe_user')]
 
 
 class Cart(CartFavorite):
     """Корзина покупок."""
+
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
@@ -148,6 +159,7 @@ class Cart(CartFavorite):
 
 class Favorite(CartFavorite):
     """Избранное."""
+
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'

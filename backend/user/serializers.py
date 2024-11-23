@@ -45,10 +45,8 @@ class UserSerializer(serializers.ModelSerializer):
                 return bool(Follow.objects.filter(
                     user_id=user.id,
                     author_id=obj.id).exists())
-            else:
-                return False
-        else:
             return False
+        return False
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

@@ -4,14 +4,14 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
-from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
+from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
+                            Recipe, Tag)
 from user.serializers import UserSerializer
-
-# from rest_framework.response import Response
 
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериалайзер для тэгов."""
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
@@ -20,6 +20,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериалайзер для ингридиентов."""
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -28,6 +29,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериалайзер для ингридиентов с количеством."""
+
     id = serializers.ReadOnlyField(
         source='ingredient.id')
     name = serializers.ReadOnlyField(
@@ -53,9 +55,8 @@ class Base64ImageField(serializers.ImageField):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    """
-    Serializer для поля ingredient модели Recipe - создание ингредиентов.
-    """
+    """Сериалайзер для записи ингредиентов с полем amount."""
+
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all())
     amount = serializers.IntegerField()
@@ -67,6 +68,7 @@ class IngredientWriteSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериалайзер для рецептов."""
+
     ingredients = IngredientWriteSerializer(
         many=True,
         write_only=True)
@@ -76,12 +78,20 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = UserSerializer(
         read_only=True)
-    is_favorited = serializers.BooleanField(
-        default=False,
-        read_only=True)
-    is_in_shopping_cart = serializers.BooleanField(
-        default=False,
-        read_only=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if not user.is_anonymous:
+            return Favorite.objects.filter(recipe=obj).exists()
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if not user.is_anonymous:
+            return Cart.objects.filter(recipe=obj).exists()
+        return False
 
     def validate(self, attrs):
         """Валидация тэгов, ингредиентов."""
@@ -158,6 +168,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
+    """Сериалайзер для вывода списка рецептов."""
+
     author = UserSerializer()
     tags = TagSerializer(
         many=True,
@@ -176,25 +188,94 @@ class RecipeListSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text', 'cooking_time')
 
     def get_is_favorited(self, obj):
-        return False
+        user = self.context.get('request').user
+        if not user.is_anonymous:
+            return Favorite.objects.filter(
+                user_id=user.id,
+                recipe_id=obj.id).exists()
+        else:
+            return False
 
     def get_is_in_shopping_cart(self, obj):
-        return False
-
-    # def get_is_favorited(self, obj):
-    #     user = self.context.get('request').user
-    #     if not user.is_anonymous:
-    #         return Favorite.objects.filter(recipe=obj).exists()
-    #     return False
-
-    # def get_is_in_shopping_cart(self, obj):
-    #     user = self.context.get('request').user
-    #     if not user.is_anonymous:
-    #         return ShoppingCart.objects.filter(recipe=obj).exists()
-    #     return False
+        user = self.context.get('request').user
+        if not user.is_anonymous:
+            return Cart.objects.filter(
+                user_id=user.id,
+                recipe_id=obj.id).exists()
+        else:
+            return False
 
 
 class RecipeFollowSerializer(serializers.ModelSerializer):
+    """Сериалайзер для вывода списка рецептов
+    в запросах подписки.
+    """
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'cooking_time', 'image',)
+        read_only_fields = ('__all__',)
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериалайзер.
+    """
+
+    name = serializers.ReadOnlyField(
+        source='recipe.name',
+        read_only=True)
+    image = serializers.ImageField(
+        source='recipe.image',
+        read_only=True)
+    cooking_time = serializers.IntegerField(
+        source='recipe.cooking_time',
+        read_only=True)
+    id = serializers.PrimaryKeyRelatedField(
+        source='recipe',
+        read_only=True)
+
+    def validate(self, attrs):
+        user = self.context.get('request').user
+        recipe = self.context.get('recipe')
+        if Favorite.objects.filter(recipe=recipe, user=user).exists():
+            raise ValidationError(
+                detail='рецепт уже в избранном.',
+                code=status.HTTP_400_BAD_REQUEST)
+        return super().validate(attrs)
+
+    class Meta:
+        model = Favorite
+        fields = ('id', 'name', 'cooking_time', 'image',)
+        read_only_fields = ('__all__',)
+
+
+class CartSerializer(serializers.ModelSerializer):
+    """Сериалайзер.
+    """
+
+    name = serializers.ReadOnlyField(
+        source='recipe.name',
+        read_only=True)
+    image = serializers.ImageField(
+        source='recipe.image',
+        read_only=True)
+    cooking_time = serializers.IntegerField(
+        source='recipe.cooking_time',
+        read_only=True)
+    id = serializers.PrimaryKeyRelatedField(
+        source='recipe',
+        read_only=True)
+
+    def validate(self, attrs):
+        user = self.context.get('request').user
+        recipe = self.context.get('recipe')
+        if Cart.objects.filter(recipe=recipe, user=user).exists():
+            raise ValidationError(
+                detail='рецепт уже в корзине.',
+                code=status.HTTP_400_BAD_REQUEST)
+        return super().validate(attrs)
+
+    class Meta:
+        model = Cart
+        fields = ('id', 'name', 'cooking_time', 'image',)
+        read_only_fields = ('__all__',)
