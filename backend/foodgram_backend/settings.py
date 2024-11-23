@@ -9,7 +9,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*').split(',')
 
-# Собственная переопределенная модель.
 AUTH_USER_MODEL = 'user.User'
 
 INSTALLED_APPS = [
@@ -111,7 +110,16 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10000/day',
+        'anon': '1000/day',
+    },
+
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.ApiPagination',
     'PAGE_SIZE': 6,
 
