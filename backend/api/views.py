@@ -2,7 +2,7 @@ from datetime import date
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
@@ -15,6 +15,8 @@ from api.serializers import (CartSerializer, FavoriteSerializer,
                              IngredientSerializer, RecipeListSerializer,
                              RecipeSerializer, TagSerializer)
 from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
+from shortlink.models import ShortLink
+from shortlink.serializers import ShortLinkSerializer
 
 
 class TagViewSet(mixins.ListModelMixin,
@@ -118,17 +120,43 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
+        """Выгрузка ингридиентов из рецептов корзины."""
         user = request.user
         queryset = Cart.objects.filter(user=user).values_list(
             'recipe__ingredients__name',
             'recipe__ingredients__measurement_unit').annotate(
             amount=Sum('recipe__ingredient_recipe__amount'))
-        shop_list = f'Список покупок на {date.today()}:\n'
+        shop_list = f'Список покупок на {date.today()}:'
         for position in queryset:
-            row = f'{position[0]} {position[2]} {position[1]}\n'
+            row = f'\n{position[0]} - {position[2]} {position[1]}.'
             shop_list += row
         filename = f'shop_list_{date.today()}.txt'
         response = HttpResponse(
             shop_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
+
+    @action(
+        methods=['GET'],
+        detail=True,
+        permission_classes=[AllowAny],
+        url_path='get-link'
+    )
+    def get_link(self, request, pk):
+        # recipe = get_object_or_404(Recipe, id=pk)
+        full_url = request.path[:-9]
+        if ShortLink.objects.filter(full=full_url).exists():
+            link_object = ShortLink.objects.get(full=full_url)
+            serializer = ShortLinkSerializer(link_object)
+        else:
+            serializer = ShortLinkSerializer(
+                data={'full': full_url},
+                context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        s_link = serializer.data.get('short')
+        response_data = {'short-link': s_link}
+        return Response(response_data, status=status.HTTP_200_OK)
+
+        # return redirect('/api/', permanent=True)
+        # request.get_full_path()

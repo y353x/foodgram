@@ -14,3 +14,5 @@ MAX_ADMIN_NAME_LENGTH = 25
 MAIL_LENGTH = 254
 # Количество выводимых рецептов, если не передан параметр.
 RECIPES_LIMIT = 6
+# Длина короткой ссылки.
+S_LINK_LENGTH = 3

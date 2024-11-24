@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'user.apps.UserConfig',
     'recipes.apps.RecipesConfig',
+    'shortlink.apps.ShortlinkConfig',
 ]
 
 MIDDLEWARE = [
