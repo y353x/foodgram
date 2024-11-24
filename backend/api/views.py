@@ -143,7 +143,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk):
-        # recipe = get_object_or_404(Recipe, id=pk)
+        get_object_or_404(Recipe, id=pk)  # Ссылка только при наличии рецепта.
         full_url = request.path[:-9]
         if ShortLink.objects.filter(full=full_url).exists():
             link_object = ShortLink.objects.get(full=full_url)
@@ -157,6 +157,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         s_link = serializer.data.get('short')
         response_data = {'short-link': s_link}
         return Response(response_data, status=status.HTTP_200_OK)
-
-        # return redirect('/api/', permanent=True)
-        # request.get_full_path()
