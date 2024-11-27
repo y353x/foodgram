@@ -2,7 +2,7 @@ from datetime import date
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
@@ -144,7 +144,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk):
         get_object_or_404(Recipe, id=pk)  # Ссылка только при наличии рецепта.
-        full_url = request.path[:-9]
+        full_url = request.path[4:-9]
         if ShortLink.objects.filter(full=full_url).exists():
             link_object = ShortLink.objects.get(full=full_url)
             serializer = ShortLinkSerializer(link_object)

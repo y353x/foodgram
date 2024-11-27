@@ -18,7 +18,6 @@ class User(AbstractUser):
         verbose_name='имя пользователя',
         unique=True,
         db_index=True,
-        # validators=(...,),
     )
     email = models.EmailField(
         verbose_name='email',

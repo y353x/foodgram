@@ -67,7 +67,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if not re.fullmatch(r'^[\w.@+-]+\Z', value):
             raise ValidationError(
-                'username должен соответствовать "^[\w.@+-]+\Z"')
+                'username должен соответствовать "^[\\w.@+-]+\\Z"')
         elif User.objects.filter(username=value).exists():
             raise ValidationError(
                 'username занят')
