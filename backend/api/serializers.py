@@ -218,8 +218,7 @@ class RecipeFollowSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    """Сериалайзер.
-    """
+    """Сериалайзер для избранного."""
 
     name = serializers.ReadOnlyField(
         source='recipe.name',
@@ -250,8 +249,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    """Сериалайзер.
-    """
+    """Сериалайзер для корзины."""
 
     name = serializers.ReadOnlyField(
         source='recipe.name',

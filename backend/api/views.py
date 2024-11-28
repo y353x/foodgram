@@ -93,7 +93,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk):
-        """Добавление/удаление рецепта в корзину ."""
+        """Добавление/удаление рецепта в корзину."""
         recipe = get_object_or_404(Recipe, id=pk)
         user = request.user
 
@@ -143,6 +143,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk):
+        """Создание/выдача короткой ссылки на рецепт."""
         get_object_or_404(Recipe, id=pk)  # Ссылка только при наличии рецепта.
         full_url = request.path[4:-9]
         if ShortLink.objects.filter(full=full_url).exists():

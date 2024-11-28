@@ -6,6 +6,7 @@ from api.constants import MAIL_LENGTH, MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
 
 
 class User(AbstractUser):
+    """Кастом модель пользователя."""
 
     USER = 'user'
     ADMIN = 'admin'

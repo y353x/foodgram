@@ -108,6 +108,7 @@ class Recipe(models.Model):
 
 class IngredientRecipe(models.Model):
     """Промежуточная таблица с весом ингридиента в рецепте."""
+
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='ingredient_recipe',)

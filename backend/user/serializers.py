@@ -23,6 +23,7 @@ class Base64ImageField(serializers.ImageField):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериалайзер модели пользователя."""
 
     username = serializers.CharField(max_length=USERNAME_LENGTH)
     is_subscribed = serializers.SerializerMethodField()
@@ -50,6 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    """Сериалайзер модели пользователя для создания."""
 
     username = serializers.CharField(max_length=150)
 
