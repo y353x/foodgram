@@ -12,6 +12,7 @@ services:
     volumes:
       - pg_data_production:/var/lib/postgresql/data
   backend:
+    restart: always
     image: y353x/foodgram_backend
     env_file: .env
     volumes:
