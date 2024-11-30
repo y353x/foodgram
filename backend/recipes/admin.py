@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
+from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
+                            Recipe, Tag)
 
 
 @admin.register(Tag)
@@ -24,7 +25,7 @@ class IngredientAdmin(admin.ModelAdmin):
 class RecipeInline(admin.TabularInline):
     """Класс для корректного внесения рецептов."""
 
-    model = Recipe
+    model = IngredientRecipe
 
 
 @admin.register(Recipe)
