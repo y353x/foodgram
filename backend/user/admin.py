@@ -18,7 +18,7 @@ class UserAdmin(BaseUserAdmin):
         description='Подписчиков'
     )
     def get_follower(self, obj):
-        return obj.followers.count()
+        return obj.follower.count()
 
     @admin.display(
         description='Рецепты автора'
