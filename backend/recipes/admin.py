@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from api.constants import ADMIN_EXTRA_FIELDS
 from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
                             Recipe, Tag)
 
@@ -26,6 +27,7 @@ class RecipeInline(admin.TabularInline):
     """Класс для корректного внесения рецептов."""
 
     model = IngredientRecipe
+    extra = ADMIN_EXTRA_FIELDS  # Количество развернутых полей ингедиента.
 
 
 @admin.register(Recipe)
@@ -43,7 +45,7 @@ class RecipeAdmin(admin.ModelAdmin):
         description='Добавлено в избранное раз'
     )
     def get_favorite(self, obj):
-        return obj.favorite.count()
+        return obj.favorites.count()
 
 
 @admin.register(Cart)

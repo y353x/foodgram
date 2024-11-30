@@ -20,3 +20,5 @@ S_LINK_LENGTH = 3
 COOKING_TIME = 1
 # Минимальное количество ингредиента.
 INGREDIENT_MEASURE = 1
+# Количество развернутых полей ингедиента.
+ADMIN_EXTRA_FIELDS = 1

@@ -69,7 +69,7 @@ class Follow(models.Model):
     """Модель подписок."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower')
+        User, on_delete=models.CASCADE, related_name='followers')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='author')
 
