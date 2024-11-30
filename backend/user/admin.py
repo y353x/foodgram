@@ -15,7 +15,7 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email', 'username')
 
     @admin.display(
-        description='Подписчиков'
+        description='Подписчиков пользователя'
     )
     def get_follower(self, obj):
         return obj.follower.count()
