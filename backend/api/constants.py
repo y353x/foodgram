@@ -16,3 +16,7 @@ MAIL_LENGTH = 254
 RECIPES_LIMIT = 6
 # Длина короткой ссылки.
 S_LINK_LENGTH = 3
+# Минимально время приготовления рецепта.
+COOKING_TIME = 1
+# Минимальное количество ингредиента.
+INGREDIENT_MEASURE = 1

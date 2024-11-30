@@ -4,14 +4,23 @@ from django.db import models
 from django.utils.text import Truncator
 
 from api.constants import (MAX_ADMIN_NAME_LENGTH, NAME_LENGTH,
-                           SHORT_NAME_LENGTH, TAG_LENGTH, UNIT_NAME_LENGTH)
+                           SHORT_NAME_LENGTH, TAG_LENGTH,
+                           UNIT_NAME_LENGTH, COOKING_TIME,
+                           INGREDIENT_MEASURE)
 
 User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """Модель ингридиентов.
-    Название (name) и ед.измерения (slug).
+    """
+    Модель ингридиентов.
+
+    Атрибуты
+    --------
+    name : str
+        уникальное название
+    measurement_unit : str
+        единица измерения
     """
 
     name = models.CharField(verbose_name='Название',
@@ -24,18 +33,31 @@ class Ingredient(models.Model):
                                         help_text='единица измерения')
 
     class Meta:
-        ordering = ('id',)
-        default_related_name = 'ingredient'
+        ordering = ('name',)
+        # default_related_name = 'ingredient'
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='name_measurement_unit',
+            )
+        ]
 
     def __str__(self):
         return Truncator(self.name).chars(MAX_ADMIN_NAME_LENGTH)
 
 
 class Tag(models.Model):
-    """Модель тэгов.
-    Название (name) и слаг (slug).
+    """
+    Модель тэгов.
+
+    Атрибуты
+    --------
+    name : str
+        уникальное название
+    slug : str
+        уникальный тэг
     """
 
     name = models.CharField(verbose_name='Название',
@@ -48,8 +70,8 @@ class Tag(models.Model):
                             help_text='уникальный тэг')
 
     class Meta:
-        ordering = ('id',)
-        default_related_name = 'tag'
+        ordering = ('name',)
+        # default_related_name = 'tag'
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
 
@@ -83,10 +105,11 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         help_text='Введите время пригтовления в минутах',
-        default=1,
+        default=COOKING_TIME,
         validators=[
             MinValueValidator(
-                1, 'Время приготовления не менее 1 минуты.')])
+                COOKING_TIME,
+                f'Время приготовления не менее {COOKING_TIME} минут(ы).')])
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
         auto_now_add=True)
@@ -107,18 +130,19 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    """Промежуточная таблица с весом ингридиента в рецепте."""
+    """Промежуточная таблица с весом ингредиента в рецепте."""
 
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='ingredient_recipe',)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество ингридиента',
-        help_text='Введите количество ингридиента в его ед.измерения',
-        default=1,
+        verbose_name='Количество ингредиента',
+        help_text='Введите количество ингредиента в его ед.измерения',
+        default=INGREDIENT_MEASURE,
         validators=[MinValueValidator(
-            1, 'Количество ингридиента не менее 1 ед.измерения.')])
+            INGREDIENT_MEASURE,
+            f'Количество ингредиента не менее {INGREDIENT_MEASURE} ед.изм.')])
 
     class Meta:
         ordering = ('id',)
@@ -153,15 +177,23 @@ class Cart(CartFavorite):
     """Корзина покупок."""
 
     class Meta:
+        ordering = ('recipe__name',)
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
-        default_related_name = 'cart'
+        default_related_name = 'carts'
+
+    def __str__(self):
+        return f'{self.recipe.name} в корзине.'
 
 
 class Favorite(CartFavorite):
     """Избранное."""
 
     class Meta:
+        ordering = ('recipe__name',)
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        default_related_name = 'favorite'
+        default_related_name = 'favorites'
+
+    def __str__(self):
+        return f'{self.recipe.name} в избранном.'

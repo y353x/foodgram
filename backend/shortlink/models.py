@@ -17,8 +17,7 @@ class ShortLink(models.Model):
                              help_text='Короткая ссылка')
 
     class Meta:
-        ordering = ('id',)
-        default_related_name = 'link'
+        ordering = ('full',)
         verbose_name = 'ссылка'
         verbose_name_plural = 'Ссылки'
 
