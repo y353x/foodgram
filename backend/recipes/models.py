@@ -1,10 +1,11 @@
-from api.constants import (COOKING_TIME, INGREDIENT_MEASURE,
-                           MAX_ADMIN_NAME_LENGTH, NAME_LENGTH,
-                           SHORT_NAME_LENGTH, TAG_LENGTH, UNIT_NAME_LENGTH)
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.text import Truncator
+
+from api.constants import (COOKING_TIME, INGREDIENT_MEASURE,
+                           MAX_ADMIN_NAME_LENGTH, NAME_LENGTH,
+                           SHORT_NAME_LENGTH, TAG_LENGTH, UNIT_NAME_LENGTH)
 
 User = get_user_model()
 

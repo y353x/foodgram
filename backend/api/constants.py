@@ -22,3 +22,7 @@ COOKING_TIME = 1
 INGREDIENT_MEASURE = 1
 # Количество развернутых полей ингедиента.
 ADMIN_EXTRA_FIELDS = 1
+# Константа для страницы /me.
+ACTION_ME = 'me'
+# Регулярное выражение для валидации.
+REGEX_VALIDATION = r'^[\w.@+-]+\Z'

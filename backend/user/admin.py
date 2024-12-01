@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
 from recipes.models import User
 from user.models import Follow
 
@@ -9,15 +10,15 @@ class UserAdmin(BaseUserAdmin):
     """Админ-зона пользователей."""
 
     list_display = ('id', 'username', 'email', 'first_name',
-                    'get_follower', 'get_recipes')
+                    'get_followers', 'get_recipes')
     list_filter = ('email', 'username')
     search_fields = ('email', 'username')
 
     @admin.display(
         description='Подписчиков пользователя'
     )
-    def get_follower(self, obj):
-        return obj.follower.count()
+    def get_followers(self, obj):
+        return obj.followers.count()
 
     @admin.display(
         description='Рецепты автора'

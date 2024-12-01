@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from api.constants import ACTION_ME
 from user.models import Follow, User
 from user.serializers import AvatarSerializer, FollowSerializer, UserSerializer
 
@@ -18,7 +20,7 @@ class UserViewSet(djoser_views.UserViewSet):
 
     def get_permissions(self):
         """Запрет входа на эндпоинт me анониму."""
-        if self.action == 'me':
+        if self.action == ACTION_ME:
             self.permission_classes = settings.PERMISSIONS.user_me
         return super().get_permissions()
 
@@ -44,8 +46,7 @@ class UserViewSet(djoser_views.UserViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            raise ValidationError('Введены некорректные данные.')
+        raise ValidationError('Введены некорректные данные.')
 
     @action(
         methods=['GET'],
@@ -82,9 +83,8 @@ class UserViewSet(djoser_views.UserViewSet):
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            subscription = Follow.objects.filter(user=user, author=author)
-            if subscription.exists():
-                subscription.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        subscription = Follow.objects.filter(user=user, author=author)
+        if subscription.exists():
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)

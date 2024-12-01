@@ -1,6 +1,7 @@
-from api.constants import MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
 from django.db import models
 from django.utils.text import Truncator
+
+from api.constants import MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
 
 
 class ShortLink(models.Model):

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from shortlink.views import s_link_redirect
 
 urlpatterns = [

@@ -1,8 +1,9 @@
 from random import choice
 from string import ascii_letters, digits
 
-from api.constants import S_LINK_LENGTH
 from rest_framework import serializers
+
+from api.constants import S_LINK_LENGTH
 from shortlink.models import ShortLink
 
 

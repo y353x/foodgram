@@ -1,24 +1,14 @@
-import base64  # Модуль с функциями кодирования и декодирования base64
 import re  # Regex.
 
-import api.serializers as api_serializers
-from api.constants import RECIPES_LIMIT, USERNAME_LENGTH
-from django.core.files.base import ContentFile
-from recipes.models import Recipe
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
+
+import api.serializers as api_serializers
+from api.constants import (ACTION_ME, RECIPES_LIMIT, REGEX_VALIDATION,
+                           USERNAME_LENGTH)
+from recipes.models import Recipe
+from user.fields import Base64ImageField
 from user.models import Follow, User
-
-
-class Base64ImageField(serializers.ImageField):
-    """Преобразование изображения из Base64."""
-
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='avatar.' + ext)
-        return super().to_internal_value(data)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,20 +29,16 @@ class UserSerializer(serializers.ModelSerializer):
                   )
 
     def get_is_subscribed(self, obj):
-        if self.context.get('request') is not None:
-            user = self.context.get('request').user
-            if not user.is_anonymous:
-                return bool(Follow.objects.filter(
-                    user_id=user.id,
-                    author_id=obj.id).exists())
-            return False
+        request = self.context.get('request')
+        if (request is not None and request.user.is_authenticated):
+            return (obj.authors.filter(user=request.user).exists())
         return False
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
     """Сериалайзер модели пользователя для создания."""
 
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=USERNAME_LENGTH)
 
     class Meta:
         model = User
@@ -66,18 +52,19 @@ class UserCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_username(self, value):
-        if value == 'me':
-            raise ValidationError("Недопустимое имя")
-        elif not re.fullmatch(r'^[\w.@+-]+\Z', value):
+        if value == ACTION_ME:
             raise ValidationError(
-                'username должен соответствовать "^[\\w.@+-]+\\Z"')
+                'Недопустимое имя')
+        elif not re.fullmatch(REGEX_VALIDATION, value):
+            raise ValidationError(
+                f'username должен соответствовать {REGEX_VALIDATION}')
         elif User.objects.filter(username=value).exists():
             raise ValidationError(
-                'username занят')
+                f'username {value} занят')
         return value
 
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+    # def create(self, validated_data):
+    #     return User.objects.create_user(**validated_data)
 
 
 class AvatarSerializer(serializers.ModelSerializer):
@@ -129,8 +116,11 @@ class FollowSerializer(serializers.ModelSerializer):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""
         request = self.context.get('request')
         recipes = obj.author.recipes.all()
-        recipes_limit = int(request.query_params.get('recipes_limit',
-                                                     RECIPES_LIMIT))
+        try:
+            recipes_limit = int(request.query_params.get('recipes_limit',
+                                                         RECIPES_LIMIT))
+        except ValueError:
+            raise
         recipes = recipes[:recipes_limit]
         return api_serializers.RecipeFollowSerializer(recipes, many=True).data
 

@@ -1,7 +1,8 @@
-from api.constants import MAIL_LENGTH, MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.text import Truncator
+
+from api.constants import MAIL_LENGTH, MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
 
 
 class User(AbstractUser):
@@ -48,9 +49,9 @@ class Follow(models.Model):
     """Модель подписок."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower')
+        User, on_delete=models.CASCADE, related_name='followers')
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='author')
+        User, on_delete=models.CASCADE, related_name='authors')
 
     class Meta:
         ordering = ('author_id',)
