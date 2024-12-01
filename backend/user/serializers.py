@@ -1,4 +1,4 @@
-import re  # Regex.
+import re
 
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
@@ -6,7 +6,6 @@ from rest_framework.exceptions import ValidationError
 import api.serializers as api_serializers
 from api.constants import (ACTION_ME, RECIPES_LIMIT, REGEX_VALIDATION,
                            USERNAME_LENGTH)
-from recipes.models import Recipe
 from user.fields import Base64ImageField
 from user.models import Follow, User
 
@@ -63,8 +62,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 f'username {value} занят')
         return value
 
-    # def create(self, validated_data):
-    #     return User.objects.create_user(**validated_data)
+    # Без create пароли формируются без кодирования.
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
 class AvatarSerializer(serializers.ModelSerializer):
@@ -87,9 +87,15 @@ class FollowSerializer(serializers.ModelSerializer):
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(source='author.recipes.count')
     avatar = serializers.ImageField(source='author.avatar',
                                     read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = ('email', 'id', 'username', 'avatar',
+                  'recipes', 'recipes_count',
+                  'first_name', 'last_name', 'is_subscribed')
 
     def validate(self, attrs):
         user = self.context.get('request').user
@@ -122,15 +128,6 @@ class FollowSerializer(serializers.ModelSerializer):
         except ValueError:
             raise
         recipes = recipes[:recipes_limit]
-        return api_serializers.RecipeFollowSerializer(recipes, many=True).data
-
-    def get_recipes_count(self, obj):
-        """Расчет количества рецептов автора."""
-        recipes_count = Recipe.objects.filter(author=obj.author).count()
-        return recipes_count
-
-    class Meta:
-        model = Follow
-        fields = ('email', 'id', 'username', 'avatar',
-                  'recipes', 'recipes_count',
-                  'first_name', 'last_name', 'is_subscribed')
+        return api_serializers.RecipeFollowSerializer(recipes,
+                                                      context=self.context,
+                                                      many=True).data
