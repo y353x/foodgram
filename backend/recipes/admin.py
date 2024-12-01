@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 from api.constants import ADMIN_EXTRA_FIELDS
+from django.contrib import admin
 from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
                             Recipe, Tag)
 

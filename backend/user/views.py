@@ -6,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from user.models import Follow, User
 from user.serializers import AvatarSerializer, FollowSerializer, UserSerializer
 
@@ -19,7 +18,7 @@ class UserViewSet(djoser_views.UserViewSet):
 
     def get_permissions(self):
         """Запрет входа на эндпоинт me анониму."""
-        if self.action == "me":
+        if self.action == 'me':
             self.permission_classes = settings.PERMISSIONS.user_me
         return super().get_permissions()
 

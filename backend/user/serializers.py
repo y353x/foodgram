@@ -1,13 +1,12 @@
 import base64  # Модуль с функциями кодирования и декодирования base64
 import re  # Regex.
 
-from django.core.files.base import ContentFile
-from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError
-
 import api.serializers as api_serializers
 from api.constants import RECIPES_LIMIT, USERNAME_LENGTH
+from django.core.files.base import ContentFile
 from recipes.models import Recipe
+from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
 from user.models import Follow, User
 
 
@@ -67,7 +66,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_username(self, value):
-        if not re.fullmatch(r'^[\w.@+-]+\Z', value):
+        if value == 'me':
+            raise ValidationError("Недопустимое имя")
+        elif not re.fullmatch(r'^[\w.@+-]+\Z', value):
             raise ValidationError(
                 'username должен соответствовать "^[\\w.@+-]+\\Z"')
         elif User.objects.filter(username=value).exists():

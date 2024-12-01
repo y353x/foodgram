@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import FilterSet, filters
-
 from recipes.models import Recipe, Tag
 
 User = get_user_model()
@@ -26,10 +25,10 @@ class RecipeFilter(FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         if self.request.user.id and value:
-            return queryset.filter(favorite__user=self.request.user)
+            return queryset.filter(favorites__user=self.request.user)
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         if self.request.user.id and value:
-            return queryset.filter(cart__user=self.request.user)
+            return queryset.filter(carts__user=self.request.user)
         return queryset

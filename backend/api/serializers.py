@@ -1,11 +1,10 @@
 import base64  # Модуль с функциями кодирования и декодирования base64
 
 from django.core.files.base import ContentFile
-from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError
-
 from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
                             Recipe, Tag)
+from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
 from user.serializers import UserSerializer
 
 
