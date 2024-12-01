@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.text import Truncator
 
 from api.constants import MAIL_LENGTH, MAX_ADMIN_NAME_LENGTH, USERNAME_LENGTH
+from user.validators import validate_username
 
 
 class User(AbstractUser):
@@ -15,6 +16,7 @@ class User(AbstractUser):
         verbose_name='имя пользователя',
         unique=True,
         db_index=True,
+        validators=(validate_username,),
     )
     email = models.EmailField(
         verbose_name='email',
