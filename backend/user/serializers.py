@@ -29,9 +29,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if (request is not None and request.user.is_authenticated):
-            return (obj.authors.filter(user=request.user).exists())
-        return False
+        return (request is not None and request.user.is_authenticated and obj.
+                authors.filter(user=request.user).exists())
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -115,12 +114,6 @@ class FollowSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         return user.is_authenticated and user.followers.filter(
             author_id=obj.author_id).exists()
-    # def get_is_subscribed(self, obj):
-    #     user = self.context.get('request').user
-    #     if not user.is_anonymous:
-    #         return Follow.objects.filter(
-    #             user_id=user.id,
-    #             author_id=obj.author_id).exists()
 
     def get_recipes(self, obj):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""

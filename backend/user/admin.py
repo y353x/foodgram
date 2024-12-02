@@ -14,15 +14,11 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ('email', 'username')
     search_fields = ('email', 'username')
 
-    @admin.display(
-        description='Подписчиков пользователя'
-    )
+    @admin.display(description='Подписчиков пользователя')
     def get_followers(self, obj):
         return obj.followers.count()
 
-    @admin.display(
-        description='Рецепты автора'
-    )
+    @admin.display(description='Рецептов пользователя')
     def get_recipes(self, obj):
         return obj.recipes.count()
 
