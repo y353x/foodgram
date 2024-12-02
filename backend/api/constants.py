@@ -19,7 +19,7 @@ S_LINK_LENGTH = 3
 # Минимально время приготовления рецепта.
 COOKING_TIME = 1
 # Минимальное количество ингредиента.
-INGREDIENT_MEASURE = 1
+INGREDIENT_AMOUNT = 1
 # Количество развернутых полей ингедиента.
 ADMIN_EXTRA_FIELDS = 1
 # Константа для страницы /me.

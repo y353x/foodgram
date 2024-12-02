@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.text import Truncator
 
-from api.constants import (COOKING_TIME, INGREDIENT_MEASURE,
+from api.constants import (COOKING_TIME, INGREDIENT_AMOUNT,
                            MAX_ADMIN_NAME_LENGTH, NAME_LENGTH,
                            SHORT_NAME_LENGTH, TAG_LENGTH, UNIT_NAME_LENGTH)
 
@@ -33,7 +33,6 @@ class Ingredient(models.Model):
 
     class Meta:
         ordering = ('name',)
-        # default_related_name = 'ingredient'
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
         constraints = [
@@ -70,7 +69,6 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ('name',)
-        # default_related_name = 'tag'
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
 
@@ -141,10 +139,10 @@ class IngredientRecipe(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
         help_text='Введите количество ингредиента в его ед.измерения',
-        default=INGREDIENT_MEASURE,
+        default=INGREDIENT_AMOUNT,
         validators=[MinValueValidator(
-            INGREDIENT_MEASURE,
-            f'Количество ингредиента не менее {INGREDIENT_MEASURE} ед.изм.')])
+            INGREDIENT_AMOUNT,
+            f'Количество ингредиента не менее {INGREDIENT_AMOUNT} ед.изм.')])
 
     class Meta:
         ordering = ('id',)
