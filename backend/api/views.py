@@ -56,9 +56,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return CartSerializer
         return RecipeSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
@@ -94,15 +91,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'recipe__ingredients__measurement_unit').annotate(
             amount=Sum('recipe__ingredient_recipe__amount'))
         return shopping_list(queryset)
-        # shop_list = f'Список покупок на {date.today()}:'
-        # for position in queryset:
-        #     row = f'\n{position[0]} - {position[2]} {position[1]}.'
-        #     shop_list += row
-        # filename = f'shop_list_{date.today()}.txt'
-        # response = HttpResponse(
-        #     shop_list, content_type='text/plain')
-        # response['Content-Disposition'] = f'attachment; filename={filename}'
-        # return response
 
     @action(
         methods=['GET'],

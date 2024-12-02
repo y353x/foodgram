@@ -3,7 +3,8 @@ from datetime import date
 from django.http import HttpResponse
 
 
-def shopping_list(queryset):
+def shopping_list(queryset) -> HttpResponse:
+    """Формирование файла списка покупок."""
     today = date.today()
     shop_list = f'Список покупок на {today}:'
     for position in queryset:

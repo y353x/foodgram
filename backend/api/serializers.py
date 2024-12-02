@@ -1,4 +1,4 @@
-import base64  # Модуль с функциями кодирования и декодирования base64
+import base64
 
 from django.core.files.base import ContentFile
 from rest_framework import serializers, status
@@ -15,7 +15,7 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
-        read_only_fields = ('__all__',)
+        # read_only_fields = ('__all__',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
-        read_only_fields = ('__all__',)
+        # read_only_fields = ('__all__',)
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
-        read_only_fields = ('__all__',)
+        # read_only_fields = ('__all__',)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -125,7 +125,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = super().create(validated_data)
+        author = self.context.get('request').user
+        recipe = Recipe.objects.create(author=author, **validated_data)
         for ingredient in ingredients:
             IngredientRecipe.objects.update_or_create(
                 recipe=recipe,
