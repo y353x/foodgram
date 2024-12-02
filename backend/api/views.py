@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -19,9 +19,7 @@ from shortlink.models import ShortLink
 from shortlink.serializers import ShortLinkSerializer
 
 
-class TagViewSet(mixins.ListModelMixin,
-                 mixins.RetrieveModelMixin,
-                 viewsets.GenericViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет для тегов."""
 
     queryset = Tag.objects.all()
@@ -30,9 +28,7 @@ class TagViewSet(mixins.ListModelMixin,
     pagination_class = None
 
 
-class IngredientViewSet(mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
-                        viewsets.GenericViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет для ингридиентов."""
 
     queryset = Ingredient.objects.all()
@@ -73,20 +69,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FavoriteSerializer(
-                data={'recipe': recipe},
-                context={'request': request,
-                         'recipe': recipe})
+                data={'recipe': pk},
+                context={'request': request})
             serializer.is_valid(raise_exception=True)
-            serializer.save(recipe=recipe, user=user)
+            serializer.save(user=user)
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            favorite_recipe = Favorite.objects.filter(recipe=recipe, user=user)
-            if favorite_recipe.exists():
-                favorite_recipe.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        favorite_recipe = Favorite.objects.filter(recipe=recipe, user=user)
+        if favorite_recipe.exists():
+            favorite_recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -100,20 +94,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = CartSerializer(
-                data={'recipe': recipe},
-                context={'request': request,
-                         'recipe': recipe})
+                data={'recipe': pk},
+                context={'request': request})
             serializer.is_valid(raise_exception=True)
-            serializer.save(recipe=recipe, user=user)
+            serializer.save(user=user)
+            # serializer.save(recipe=recipe, user=user)
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            favorite_recipe = Cart.objects.filter(recipe=recipe, user=user)
-            if favorite_recipe.exists():
-                favorite_recipe.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        favorite_recipe = Cart.objects.filter(recipe=recipe, user=user)
+        if favorite_recipe.exists():
+            favorite_recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         methods=['GET'],

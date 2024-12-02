@@ -26,3 +26,7 @@ ADMIN_EXTRA_FIELDS = 1
 ACTION_ME = 'me'
 # Регулярное выражение для валидации.
 REGEX_VALIDATION = r'^[\w.@+-]+\Z'
+# Исходное значение пагинации
+PAGE_SIZE = 6
+# Параметр для типа пагинации.
+PAGE_QUERY_PARAM = 'limit'

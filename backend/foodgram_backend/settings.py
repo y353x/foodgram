@@ -126,7 +126,7 @@ REST_FRAMEWORK = {
         'anon': '1000/day',
     },
 
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.ApiPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.paginations.ApiPagination',
     'PAGE_SIZE': 6,
 
     'SEARCH_PARAM': 'name'

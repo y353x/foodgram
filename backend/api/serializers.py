@@ -208,7 +208,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
 class RecipeFollowSerializer(serializers.ModelSerializer):
     """Сериалайзер для вывода списка рецептов
-    в запросах подписки.
+    в запросах подписки, избранном и корзине.
     """
 
     class Meta:
@@ -217,63 +217,83 @@ class RecipeFollowSerializer(serializers.ModelSerializer):
         read_only_fields = ('__all__',)
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
+# class CartSerializer(serializers.ModelSerializer):
+#     """Сериалайзер для корзины."""
+
+#     class Meta:
+#         model = Cart
+#         fields = ('user', 'recipe')
+#         read_only_fields = ('user',)
+
+#     def validate(self, data):
+#         user = self.context.get('request').user
+#         if Cart.objects.filter(user=user).exists():
+#             raise ValidationError(
+#                 detail='рецепт уже в корзине.',
+#                 code=status.HTTP_400_BAD_REQUEST)
+#         return super().validate(data)
+
+#     def to_representation(self, instance):
+#         return RecipeFollowSerializer(
+#             instance.recipe,
+#             context=self.context
+#         ).data
+
+
+# class FavoriteSerializer(serializers.ModelSerializer):
+#     """Сериалайзер для избранного."""
+
+#     class Meta:
+#         model = Favorite
+#         fields = ('user', 'recipe')
+#         read_only_fields = ('user',)
+
+#     def validate(self, data):
+#         user = self.context.get('request').user
+#         if Favorite.objects.filter(user=user).exists():
+#             raise ValidationError(
+#                 detail='рецепт уже в избранном.',
+#                 code=status.HTTP_400_BAD_REQUEST)
+#         return super().validate(data)
+
+#     def to_representation(self, instance):
+#         return RecipeFollowSerializer(
+#             instance.recipe,
+#             context=self.context
+#         ).data
+
+
+class CartFavoriteSerializer(serializers.ModelSerializer):
+    """Сериалайзер для наследования Избранного и Корзины."""
+
+    class Meta:
+        model = None
+        fields = ('user', 'recipe')
+        read_only_fields = ('user',)
+
+    def validate(self, attrs):
+        recipe = attrs.get('recipe')
+        user = self.context.get('request').user
+        if self.Meta.model.objects.filter(recipe=recipe, user=user).exists():
+            raise serializers.ValidationError('рецепт уже добавлен.')
+        return super().validate(attrs)
+
+    def to_representation(self, instance):
+        return RecipeFollowSerializer(
+            instance.recipe,
+            context=self.context
+        ).data
+
+
+class FavoriteSerializer(CartFavoriteSerializer):
     """Сериалайзер для избранного."""
 
-    name = serializers.ReadOnlyField(
-        source='recipe.name',
-        read_only=True)
-    image = serializers.ImageField(
-        source='recipe.image',
-        read_only=True)
-    cooking_time = serializers.IntegerField(
-        source='recipe.cooking_time',
-        read_only=True)
-    id = serializers.PrimaryKeyRelatedField(
-        source='recipe',
-        read_only=True)
-
-    def validate(self, attrs):
-        user = self.context.get('request').user
-        recipe = self.context.get('recipe')
-        if Favorite.objects.filter(recipe=recipe, user=user).exists():
-            raise ValidationError(
-                detail='рецепт уже в избранном.',
-                code=status.HTTP_400_BAD_REQUEST)
-        return super().validate(attrs)
-
-    class Meta:
+    class Meta(CartFavoriteSerializer.Meta):
         model = Favorite
-        fields = ('id', 'name', 'cooking_time', 'image',)
-        read_only_fields = ('__all__',)
 
 
-class CartSerializer(serializers.ModelSerializer):
+class CartSerializer(CartFavoriteSerializer):
     """Сериалайзер для корзины."""
 
-    name = serializers.ReadOnlyField(
-        source='recipe.name',
-        read_only=True)
-    image = serializers.ImageField(
-        source='recipe.image',
-        read_only=True)
-    cooking_time = serializers.IntegerField(
-        source='recipe.cooking_time',
-        read_only=True)
-    id = serializers.PrimaryKeyRelatedField(
-        source='recipe',
-        read_only=True)
-
-    def validate(self, attrs):
-        user = self.context.get('request').user
-        recipe = self.context.get('recipe')
-        if Cart.objects.filter(recipe=recipe, user=user).exists():
-            raise ValidationError(
-                detail='рецепт уже в корзине.',
-                code=status.HTTP_400_BAD_REQUEST)
-        return super().validate(attrs)
-
-    class Meta:
+    class Meta(CartFavoriteSerializer.Meta):
         model = Cart
-        fields = ('id', 'name', 'cooking_time', 'image',)
-        read_only_fields = ('__all__',)
