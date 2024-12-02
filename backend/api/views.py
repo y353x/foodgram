@@ -1,7 +1,4 @@
-from datetime import date
-
 from django.db.models import Sum
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
@@ -15,6 +12,7 @@ from api.serializers import (CartSerializer, FavoriteSerializer,
                              IngredientSerializer, RecipeListSerializer,
                              RecipeSerializer, TagSerializer)
 from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
+from recipes.shopping_list import shopping_list
 from shortlink.models import ShortLink
 from shortlink.serializers import ShortLinkSerializer
 
@@ -52,6 +50,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return RecipeListSerializer
+        elif self.action == 'favorite':
+            return FavoriteSerializer
+        elif self.action == 'shopping_cart':
+            return CartSerializer
         return RecipeSerializer
 
     def perform_create(self, serializer):
@@ -64,23 +66,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         """Добавление/удаление рецепта в избранное."""
-        recipe = get_object_or_404(Recipe, id=pk)
-        user = request.user
-
         if request.method == 'POST':
-            serializer = FavoriteSerializer(
-                data={'recipe': pk},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=user)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-
-        favorite_recipe = Favorite.objects.filter(recipe=recipe, user=user)
-        if favorite_recipe.exists():
-            favorite_recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            return self._cart_favorite_post(request, pk)
+        return self._cart_favorite_delete(request, pk, Favorite)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -89,24 +77,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         """Добавление/удаление рецепта в корзину."""
-        recipe = get_object_or_404(Recipe, id=pk)
-        user = request.user
-
         if request.method == 'POST':
-            serializer = CartSerializer(
-                data={'recipe': pk},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=user)
-            # serializer.save(recipe=recipe, user=user)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-
-        favorite_recipe = Cart.objects.filter(recipe=recipe, user=user)
-        if favorite_recipe.exists():
-            favorite_recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            return self._cart_favorite_post(request, pk)
+        return self._cart_favorite_delete(request, pk, Cart)
 
     @action(
         methods=['GET'],
@@ -120,15 +93,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'recipe__ingredients__name',
             'recipe__ingredients__measurement_unit').annotate(
             amount=Sum('recipe__ingredient_recipe__amount'))
-        shop_list = f'Список покупок на {date.today()}:'
-        for position in queryset:
-            row = f'\n{position[0]} - {position[2]} {position[1]}.'
-            shop_list += row
-        filename = f'shop_list_{date.today()}.txt'
-        response = HttpResponse(
-            shop_list, content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
+        return shopping_list(queryset)
+        # shop_list = f'Список покупок на {date.today()}:'
+        # for position in queryset:
+        #     row = f'\n{position[0]} - {position[2]} {position[1]}.'
+        #     shop_list += row
+        # filename = f'shop_list_{date.today()}.txt'
+        # response = HttpResponse(
+        #     shop_list, content_type='text/plain')
+        # response['Content-Disposition'] = f'attachment; filename={filename}'
+        # return response
 
     @action(
         methods=['GET'],
@@ -152,3 +126,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         s_link = serializer.data.get('short')
         response_data = {'short-link': s_link}
         return Response(response_data, status=status.HTTP_200_OK)
+
+    def _cart_favorite_post(self, request, pk):
+        """Добавление объекта в избранное/корзину."""
+        user = request.user
+        serializer = self.get_serializer(
+            data={'recipe': pk},
+            context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED)
+
+    def _cart_favorite_delete(self, request, pk, model):
+        """Удаление объекта из избранного/корзины."""
+        recipe = get_object_or_404(Recipe, id=pk)
+        user = request.user
+        model_recipe = model.objects.filter(recipe=recipe, user=user)
+        if model_recipe.exists():
+            model_recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)

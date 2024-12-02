@@ -217,52 +217,6 @@ class RecipeFollowSerializer(serializers.ModelSerializer):
         read_only_fields = ('__all__',)
 
 
-# class CartSerializer(serializers.ModelSerializer):
-#     """Сериалайзер для корзины."""
-
-#     class Meta:
-#         model = Cart
-#         fields = ('user', 'recipe')
-#         read_only_fields = ('user',)
-
-#     def validate(self, data):
-#         user = self.context.get('request').user
-#         if Cart.objects.filter(user=user).exists():
-#             raise ValidationError(
-#                 detail='рецепт уже в корзине.',
-#                 code=status.HTTP_400_BAD_REQUEST)
-#         return super().validate(data)
-
-#     def to_representation(self, instance):
-#         return RecipeFollowSerializer(
-#             instance.recipe,
-#             context=self.context
-#         ).data
-
-
-# class FavoriteSerializer(serializers.ModelSerializer):
-#     """Сериалайзер для избранного."""
-
-#     class Meta:
-#         model = Favorite
-#         fields = ('user', 'recipe')
-#         read_only_fields = ('user',)
-
-#     def validate(self, data):
-#         user = self.context.get('request').user
-#         if Favorite.objects.filter(user=user).exists():
-#             raise ValidationError(
-#                 detail='рецепт уже в избранном.',
-#                 code=status.HTTP_400_BAD_REQUEST)
-#         return super().validate(data)
-
-#     def to_representation(self, instance):
-#         return RecipeFollowSerializer(
-#             instance.recipe,
-#             context=self.context
-#         ).data
-
-
 class CartFavoriteSerializer(serializers.ModelSerializer):
     """Сериалайзер для наследования Избранного и Корзины."""
 

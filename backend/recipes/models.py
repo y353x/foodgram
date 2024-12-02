@@ -167,6 +167,7 @@ class CartFavorite(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('recipe__name',)
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'user'],
@@ -177,7 +178,6 @@ class Cart(CartFavorite):
     """Корзина покупок."""
 
     class Meta:
-        ordering = ('recipe__name',)
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
         default_related_name = 'carts'
@@ -190,7 +190,6 @@ class Favorite(CartFavorite):
     """Избранное."""
 
     class Meta:
-        ordering = ('recipe__name',)
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         default_related_name = 'favorites'
