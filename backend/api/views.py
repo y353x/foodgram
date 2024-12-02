@@ -117,6 +117,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def _cart_favorite_post(self, request, pk):
         """Добавление объекта в избранное/корзину."""
+        get_object_or_404(Recipe, id=pk)
         user = request.user
         serializer = self.get_serializer(
             data={'recipe': pk},

@@ -1,12 +1,12 @@
 import re
 
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
 import api.serializers as api_serializers
 from api.constants import (ACTION_ME, RECIPES_LIMIT, REGEX_VALIDATION,
                            USERNAME_LENGTH)
-from user.fields import Base64ImageField
 from user.models import Follow, User
 
 
