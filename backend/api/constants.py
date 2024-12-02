@@ -20,8 +20,10 @@ S_LINK_LENGTH = 3
 COOKING_TIME = 1
 # Минимальное количество ингредиента.
 INGREDIENT_AMOUNT = 1
+# Количество доп.развернутых полей ингедиента.
+ADMIN_EXTRA_FIELDS = 0
 # Количество развернутых полей ингедиента.
-ADMIN_EXTRA_FIELDS = 1
+ADMIN_FIELDS = 1
 # Константа для страницы /me.
 ACTION_ME = 'me'
 # Регулярное выражение для валидации.

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api.constants import ADMIN_EXTRA_FIELDS
+from api.constants import ADMIN_EXTRA_FIELDS, ADMIN_FIELDS
 from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
                             Recipe, Tag)
 
@@ -24,10 +24,11 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class RecipeInline(admin.TabularInline):
-    """Класс для корректного внесения рецептов."""
+    """Класс для корректного внесения ингредиентов."""
 
     model = IngredientRecipe
-    extra = ADMIN_EXTRA_FIELDS  # Количество развернутых полей ингедиента.
+    extra = ADMIN_EXTRA_FIELDS
+    min_num = ADMIN_FIELDS
 
 
 @admin.register(Recipe)
