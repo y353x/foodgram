@@ -48,12 +48,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method in SAFE_METHODS:
-            return RecipeListSerializer
-        elif self.action == 'favorite':
+        """Выбор сериалайзера."""
+        if self.action == 'favorite':
             return FavoriteSerializer
         elif self.action == 'shopping_cart':
             return CartSerializer
+        elif self.request.method in SAFE_METHODS:
+            return RecipeListSerializer
         return RecipeSerializer
 
     @action(

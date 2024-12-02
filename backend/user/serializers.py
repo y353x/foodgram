@@ -113,10 +113,14 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        if not user.is_anonymous:
-            return Follow.objects.filter(
-                user_id=user.id,
-                author_id=obj.author_id).exists()
+        return user.is_authenticated and user.followers.filter(
+            author_id=obj.author_id).exists()
+    # def get_is_subscribed(self, obj):
+    #     user = self.context.get('request').user
+    #     if not user.is_anonymous:
+    #         return Follow.objects.filter(
+    #             user_id=user.id,
+    #             author_id=obj.author_id).exists()
 
     def get_recipes(self, obj):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""
