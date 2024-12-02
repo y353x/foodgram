@@ -16,7 +16,7 @@
 
 
 
-[Развернутый проект в сети](https://ruspraktikum.hopto.org/)
-[Документация к API](https://ruspraktikum.hopto.org/api/docs/)
+#### [Развернутый проект в сети](https://ruspraktikum.hopto.org/) ####
+#### [Документация к API](https://ruspraktikum.hopto.org/api/docs/) ####
 ![example workflow](https://github.com/y353x/foodgram/actions/workflows/main.yml/badge.svg)
 
