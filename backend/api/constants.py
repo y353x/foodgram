@@ -30,3 +30,5 @@ REGEX_VALIDATION = r'^[\w.@+-]+\Z'
 PAGE_SIZE = 6
 # Параметр для типа пагинации.
 PAGE_QUERY_PARAM = 'limit'
+# Путь к файлу фикстур.
+PATH_TO_JSON = 'api/management/commands/ingredients.json'

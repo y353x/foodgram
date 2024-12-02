@@ -32,5 +32,6 @@ requests-oauthlib==2.0.0
 social-auth-app-django==5.4.2
 social-auth-core==4.5.4
 sqlparse==0.5.1
+tqdm==4.67.1
 typing_extensions==4.12.2
 urllib3==2.2.3
