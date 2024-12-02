@@ -30,10 +30,15 @@
     - для размещения на сервере:
         - *sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_json*
 
+- Эндпоинты
+    - /api/users/ + /me/ + /me/avatar/ + /set_password/ + /subscriptions/
+    - /api/users/{id}/ + /subscribe/
+    - /api/auth/token/ + /login/ + /logout/
+    - /api/tags/ + /{id}/
+    - /api/ingredients/ + /{id}/
+    - /api/recipes/ + /download_shopping_cart/
+    - /api/recipes/{id}/ + /shopping_cart/ + /favorite/ + /get-link/
 
-sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 
 Технологи
 
@@ -48,7 +53,6 @@ sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/col
 - Nginx
 - GitHub Actions
 
-#### Пример заполнения .env файла в env.example ####
 
 #### [Развернутый проект в сети](https://ruspraktikum.hopto.org/) ####
 #### [Документация к API (локально)](localhost:8000/api/docs/) ####
