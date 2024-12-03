@@ -5,8 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
 import api.serializers as api_serializers
-from api.constants import (ACTION_ME, RECIPES_LIMIT, REGEX_VALIDATION,
-                           USERNAME_LENGTH)
+from api.constants import ACTION_ME, REGEX_VALIDATION, USERNAME_LENGTH
 from user.models import Follow, User
 
 
@@ -53,15 +52,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if value == ACTION_ME:
             raise ValidationError(
                 'Недопустимое имя')
-        elif not re.fullmatch(REGEX_VALIDATION, value):
+        if not re.fullmatch(REGEX_VALIDATION, value):
             raise ValidationError(
                 f'username должен соответствовать {REGEX_VALIDATION}')
-        elif User.objects.filter(username=value).exists():
+        if User.objects.filter(username=value).exists():
             raise ValidationError(
                 f'username {value} занят')
         return value
 
-    # Без create пароли формируются без кодирования.
+    # Для формирования паролей с кодированием.
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
@@ -119,12 +118,10 @@ class FollowSerializer(serializers.ModelSerializer):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""
         request = self.context.get('request')
         recipes = obj.author.recipes.all()
-        try:
-            recipes_limit = int(request.query_params.get('recipes_limit',
-                                                         RECIPES_LIMIT))
-        except ValueError:
-            raise
-        recipes = recipes[:recipes_limit]
+        recipes_limit_str = request.query_params.get('recipes_limit', 'nope')
+        if recipes_limit_str.isdigit():
+            recipes_limit = int(recipes_limit_str)
+            recipes = recipes[:recipes_limit]
         return api_serializers.RecipeFollowSerializer(recipes,
                                                       context=self.context,
                                                       many=True).data

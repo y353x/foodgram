@@ -91,15 +91,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 detail='добавьте фото рецепта.',
                 code=status.HTTP_400_BAD_REQUEST)
-        elif not tags:
+        if not tags:
             raise ValidationError(
                 detail='добавьте теги.',
                 code=status.HTTP_400_BAD_REQUEST)
-        elif len(tags) > len(set(tags)):
+        if len(tags) > len(set(tags)):
             raise ValidationError(
                 detail='тэги повторяются.',
                 code=status.HTTP_400_BAD_REQUEST)
-        elif not ingredients:
+        if not ingredients:
             raise ValidationError(
                 detail='добавьте ингредиенты.',
                 code=status.HTTP_400_BAD_REQUEST)

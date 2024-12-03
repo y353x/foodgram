@@ -28,7 +28,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         short_path = random_string(S_LINK_LENGTH)
-        pre_url = self.context['request'].scheme + \
-            '://' + self.context['request'].META['HTTP_HOST']
+        pre_url = (self.context['request'].scheme + '://'
+                   + self.context['request'].META['HTTP_HOST'])
         validated_data['short'] = f'{pre_url}/s/{short_path}/'
         return super().create(validated_data)
