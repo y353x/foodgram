@@ -78,46 +78,45 @@ class AvatarSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок."""
 
-    email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.ReadOnlyField(source='author.recipes.count')
-    avatar = serializers.ImageField(source='author.avatar',
-                                    read_only=True)
-
     class Meta:
         model = Follow
-        fields = ('email', 'id', 'username', 'avatar',
-                  'recipes', 'recipes_count',
-                  'first_name', 'last_name', 'is_subscribed')
+        fields = ('author', 'user')
 
     def validate(self, attrs):
-        user = self.context.get('request').user
-        author = self.context.get('author')
+        user_id = attrs['user']
+        author_id = attrs['author']
         if Follow.objects.filter(
-                author=author, user=user).exists():
+                author=author_id, user=user_id).exists():
             raise ValidationError(
                 detail='Вы уже подписаны на этого пользователя!',
                 code=status.HTTP_400_BAD_REQUEST)
-        if user == author:
+        if user_id == author_id:
             raise ValidationError(
                 detail='Невозможно подписаться на себя!',
                 code=status.HTTP_400_BAD_REQUEST)
         return super().validate(attrs)
 
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        return user.is_authenticated and user.followers.filter(
-            author_id=obj.author_id).exists()
+    def to_representation(self, instance):
+        return SubscriptionsSerializer(
+            instance.author,
+            context=self.context
+        ).data
+
+
+class SubscriptionsSerializer(UserSerializer):
+    """Сериализатор вывода подписок."""
+
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(source='recipes.count')
+
+    class Meta:
+        model = UserSerializer.Meta.model
+        fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         """Получение рецептов автора (с возможностью ограничения кол-ва)."""
         request = self.context.get('request')
-        recipes = obj.author.recipes.all()
+        recipes = obj.recipes.all()
         recipes_limit_str = request.query_params.get('recipes_limit', 'nope')
         if recipes_limit_str.isdigit():
             recipes_limit = int(recipes_limit_str)

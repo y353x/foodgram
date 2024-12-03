@@ -75,11 +75,11 @@ class UserViewSet(djoser_views.UserViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
-                data={'author': author},
-                context={'request': request,
-                         'author': author})
+                data={'author': id,
+                      'user': user.id},
+                context={'request': request})
             serializer.is_valid(raise_exception=True)
-            serializer.save(user=user, author=author)
+            serializer.save()
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 

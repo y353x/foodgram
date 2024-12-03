@@ -55,7 +55,7 @@
 
 
 #### [Развернутый проект в сети](https://ruspraktikum.hopto.org/) ####
-#### [Документация к API (локально)](localhost:8000/api/docs/) ####
+#### [Документация к API (redoc)](https://ruspraktikum.hopto.org/api/docs/) ####
 ![example workflow](https://github.com/y353x/foodgram/actions/workflows/main.yml/badge.svg)
 ##### Автор: Селимов Р.С. #####
 
